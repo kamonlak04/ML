@@ -1,318 +1,526 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KNN Regression - Machine Learning</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <style>
-        :root {
-            --glass-bg: rgba(255, 255, 255, 0.85);
-            --glass-border: rgba(255, 255, 255, 0.5);
-            --text-dark: #1e293b;
-            --text-light: #475569;
-            --accent-1: #6366f1; /* Indigo */
-            --accent-2: #ec4899; /* Pink */
-            --accent-3: #10b981; /* Emerald */
-        }
+<title>KNN Regression Visualization</title>
 
-        body {
-            font-family: 'Prompt', sans-serif;
-            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-            background-attachment: fixed;
-            color: var(--text-dark);
-            margin: 0;
-            padding: 40px 20px;
-            display: flex;
-            justify-content: center;
-            line-height: 1.6;
-        }
+<style>
+* {
+    box-sizing: border-box;
+}
 
-        .container { width: 100%; max-width: 1050px; }
+body {
+    margin: 0;
+    font-family: "Noto Sans Thai", "Segoe UI", Arial, sans-serif;
+    background: #f5f7fb;
+    color: #20242b;
+}
 
-        .glass-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-            padding: 30px;
-            margin-bottom: 30px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
+.container {
+    max-width: 1100px;
+    margin: 35px auto;
+    padding: 25px;
+}
 
-        .glass-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.2);
-        }
+.card {
+    background: white;
+    border-radius: 22px;
+    padding: 30px;
+    box-shadow: 0 8px 30px rgba(0,0,0,.08);
+}
 
-        .header-title {
-            text-align: center;
-            background: linear-gradient(to right, var(--accent-1), var(--accent-2));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-size: 36px;
-            font-weight: 700;
-            margin: 0 0 15px 0;
-        }
+h1 {
+    margin: 0 0 8px;
+    font-size: 30px;
+}
 
-        .theory-text { font-size: 16px; color: var(--text-light); text-align: center; max-width: 800px; margin: 0 auto; }
-        .highlight-text { color: var(--accent-2); font-weight: 600; }
+.subtitle {
+    color: #687080;
+    margin-bottom: 25px;
+}
 
-        .grid-2 { display: grid; grid-template-columns: 1fr 1.2fr; gap: 25px; }
-        .chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; } /* สำหรับ 2 กราฟ */
+.layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 25px;
+    align-items: start;
+}
 
-        h3 { color: var(--accent-1); font-size: 20px; margin-top: 0; display: flex; align-items: center; gap: 10px; }
+.chart-wrap {
+    position: relative;
+    border: 1px solid #e5e8ee;
+    border-radius: 16px;
+    padding: 10px;
+    background: #fff;
+}
 
-        .data-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; margin-top: 10px; }
-        .data-table th { text-align: left; padding: 12px 15px; color: var(--text-light); font-weight: 600; border-bottom: 2px solid #e2e8f0; }
-        .data-table td { background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
-        .data-table tr.target { background: linear-gradient(to right, #fff1f2, #ffe4e6); transform: scale(1.02); }
-        .data-table tr.target td { background: transparent; color: var(--accent-2); font-weight: 600; box-shadow: none; }
+svg {
+    width: 100%;
+    height: auto;
+    display: block;
+}
 
-        .step-item {
-            display: flex; margin-bottom: 20px; background: white; padding: 15px 20px;
-            border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border-left: 5px solid var(--accent-1);
-        }
-        .step-num {
-            background: var(--accent-1); color: white; width: 30px; height: 30px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px; flex-shrink: 0;
-        }
-        .step-content strong { display: block; margin-bottom: 5px; color: var(--text-dark); }
-        .step-content { font-size: 15px; color: var(--text-light); }
+.info {
+    background: #f7f8fb;
+    border-radius: 16px;
+    padding: 20px;
+}
 
-        .result-box {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white; text-align: center; padding: 25px; border-radius: 16px; margin: 30px 0;
-            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
-        }
-        .result-box h2 { margin: 0 0 10px 0; font-size: 24px; }
-        .result-box p { margin: 0; font-size: 20px; font-weight: 300; }
+.info h2 {
+    margin-top: 0;
+    font-size: 20px;
+}
 
-        .chart-container {
-            height: 350px; width: 100%; background: white; border-radius: 16px;
-            padding: 20px; box-sizing: border-box; box-shadow: inset 0 2px 10px rgba(0,0,0,0.02);
-            position: relative;
-        }
-        .chart-title { text-align: center; font-weight: 600; color: var(--text-dark); margin-bottom: 10px; font-size: 16px; }
+.result {
+    margin-top: 18px;
+    padding: 18px;
+    border-radius: 14px;
+    background: #eaf4ff;
+    text-align: center;
+}
 
-        @media (max-width: 768px) {
-            .grid-2, .chart-grid { grid-template-columns: 1fr; }
-        }
-    </style>
+.result .number {
+    font-size: 32px;
+    font-weight: 800;
+}
+
+.formula {
+    background: white;
+    border: 1px solid #e2e5eb;
+    padding: 12px;
+    border-radius: 10px;
+    margin: 12px 0;
+    text-align: center;
+    font-size: 18px;
+}
+
+.legend {
+    margin-top: 20px;
+}
+
+.legend div {
+    margin: 10px 0;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    display: inline-block;
+    border: 2px solid white;
+    box-shadow: 0 0 0 1px #999;
+}
+
+.normal {
+    background: #777;
+}
+
+.neighbor {
+    background: #1677ff;
+}
+
+.new {
+    background: #ff8a00;
+}
+
+.note {
+    color: #69707d;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+@media (max-width: 800px) {
+    .layout {
+        grid-template-columns: 1fr;
+    }
+
+    .container {
+        margin: 10px auto;
+        padding: 12px;
+    }
+
+    .card {
+        padding: 18px;
+    }
+}
+</style>
 </head>
+
 <body>
 
-    <div class="container">
-        
-        <!-- Header & Theory -->
-        <div class="glass-card" style="text-align: center; padding: 40px 30px;">
-            <div style="font-size: 40px; color: var(--accent-1); margin-bottom: 10px;"><i class="fas fa-project-diagram"></i></div>
-            <h1 class="header-title">KNN Regression</h1>
-            <p class="theory-text">
-                <strong>KNN Regression</strong> ใช้หลักการค้นหาเพื่อนบ้านใกล้ที่สุด K ตัวเหมือน Classification 
-                แต่ต่างกันที่ตัวแปรเป้าหมาย (Y) เป็น <span class="highlight-text">ค่าตัวเลขต่อเนื่อง (Continuous Value)</span> 
-                อัลกอริทึมจะสรุปผลลัพธ์โดยการหา <strong>ค่าเฉลี่ยทางสถิติ (Average / Mean)</strong> ของค่า Y จากกลุ่มเพื่อนบ้านเหล่านั้น
-            </p>
-        </div>
+<div class="container">
 
-        <div class="grid-2">
-            <!-- Data Section -->
-            <div class="glass-card">
-                <h3><i class="fas fa-database"></i> ตัวอย่างโจทย์จำลอง</h3>
-                <p style="font-size: 14px; color: var(--text-light); margin-bottom: 15px;">กำหนดข้อมูลประสบการณ์ทำงาน (ปี) กับอัตราเงินเดือน (หมื่นบาท)</p>
-                <table class="data-table">
-                    <thead>
-                        <tr><th>รายที่</th><th>ประสบการณ์ (ปี)</th><th>เงินเดือน (หมื่นบาท)</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td>1</td><td>1</td><td>15</td></tr>
-                        <tr><td>2</td><td>2</td><td>17</td></tr>
-                        <tr><td>3</td><td>4</td><td>19</td></tr>
-                        <tr><td>4</td><td>5</td><td>22</td></tr>
-                        <tr class="target">
-                            <td colspan="2"><i class="fas fa-user-plus"></i> พนักงานใหม่ (ประสบการณ์ 3 ปี)</td>
-                            <td>?</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <div style="margin-top: 15px; display: inline-block; background: var(--accent-2); color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; font-weight: 600;">
-                    กำหนด K = 2
-                </div>
-            </div>
+<div class="card">
 
-            <!-- Steps Section -->
-            <div class="glass-card">
-                <h3><i class="fas fa-cogs"></i> ขั้นตอนการคำนวณ</h3>
-                
-                <div class="step-item">
-                    <div class="step-num">1</div>
-                    <div class="step-content">
-                        <strong>คำนวณระยะห่าง (Absolute Distance)</strong>
-                        เทียบพนักงานใหม่ X=3<br>
-                        รายที่ 1: |3 - 1| = 2 &nbsp;&nbsp;|&nbsp;&nbsp; รายที่ 2: |3 - 2| = 1<br>
-                        รายที่ 3: |3 - 4| = 1 &nbsp;&nbsp;|&nbsp;&nbsp; รายที่ 4: |3 - 5| = 2
-                    </div>
-                </div>
+<h1>KNN Regression Visualization</h1>
 
-                <div class="step-item" style="border-left-color: var(--accent-2);">
-                    <div class="step-num" style="background: var(--accent-2);">2</div>
-                    <div class="step-content">
-                        <strong>คัดเลือกเพื่อนบ้านใกล้ที่สุด ลำดับ (K=2)</strong>
-                        ลำดับที่ 1: รายที่ 2 (ระยะห่าง = 1), ได้ค่า Y = 17<br>
-                        ลำดับที่ 2: รายที่ 3 (ระยะห่าง = 1), ได้ค่า Y = 19
-                    </div>
-                </div>
+<div class="subtitle">
+    ทำนายเงินเดือนจากประสบการณ์ทำงาน โดยกำหนด K = 2
+</div>
 
-                <div class="step-item" style="border-left-color: var(--accent-3);">
-                    <div class="step-num" style="background: var(--accent-3);">3</div>
-                    <div class="step-content">
-                        <strong>คำนวณค่าเฉลี่ยของกลุ่มเพื่อนบ้าน</strong>
-                        นำค่า Y มาหาค่าเฉลี่ย: (17 + 19) / 2 = <strong>18</strong>
-                    </div>
-                </div>
-            </div>
-        </div>
+<div class="layout">
 
-        <!-- Result Box -->
-        <div class="result-box">
-            <h2><i class="fas fa-check-circle"></i> ผลลัพธ์ของอัลกอริทึม</h2>
-            <p>ระบบทำนายอัตราเงินเดือนของพนักงานที่มี <strong>ประสบการณ์ 3 ปี</strong> เท่ากับ <strong>18 หมื่นบาท (180,000 บาท)</strong></p>
-        </div>
+<!-- ================= GRAPH ================= -->
 
-        <!-- NEW: Extended Visualization Section -->
-        <div class="glass-card">
-            <h3 style="margin-bottom: 25px; justify-content: center; font-size: 24px;"><i class="fas fa-chart-pie"></i> Visualization: วิเคราะห์กระบวนการ KNN</h3>
-            
-            <div class="chart-grid">
-                <!-- กราฟที่ 1: แสดงระยะห่าง -->
-                <div>
-                    <div class="chart-title"><span style="background: var(--accent-1); color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-right: 5px;">Step 1 & 2</span>เปรียบเทียบระยะห่าง (Distance)</div>
-                    <div class="chart-container">
-                        <canvas id="distanceChart"></canvas>
-                    </div>
-                    <p style="text-align: center; font-size: 13px; color: var(--text-light); margin-top: 10px;">* เลือกระยะห่างที่น้อยที่สุด 2 ลำดับแรก (สีม่วง)</p>
-                </div>
+<div class="chart-wrap">
 
-                <!-- กราฟที่ 2: แสดงผลลัพธ์บน Scatter Plot -->
-                <div>
-                    <div class="chart-title"><span style="background: var(--accent-3); color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-right: 5px;">Step 3</span>หาค่าเฉลี่ยเพื่อทำนายผล (Regression)</div>
-                    <div class="chart-container">
-                        <canvas id="knnChart"></canvas>
-                    </div>
-                    <p style="text-align: center; font-size: 13px; color: var(--text-light); margin-top: 10px;">* จุดสีชมพูคือผลลัพธ์จากค่าเฉลี่ยของเพื่อนบ้าน (Y=18)</p>
-                </div>
-            </div>
-        </div>
+<svg viewBox="0 0 760 500">
 
+<!-- Background -->
+<rect x="0" y="0" width="760" height="500" fill="white"/>
+
+
+<!-- Grid -->
+<g stroke="#e8ebf0" stroke-width="1">
+
+    <line x1="90" y1="410" x2="710" y2="410"/>
+    <line x1="90" y1="330" x2="710" y2="330"/>
+    <line x1="90" y1="250" x2="710" y2="250"/>
+    <line x1="90" y1="170" x2="710" y2="170"/>
+    <line x1="90" y1="90" x2="710" y2="90"/>
+
+    <line x1="90" y1="90" x2="90" y2="410"/>
+    <line x1="245" y1="90" x2="245" y2="410"/>
+    <line x1="400" y1="90" x2="400" y2="410"/>
+    <line x1="555" y1="90" x2="555" y2="410"/>
+    <line x1="710" y1="90" x2="710" y2="410"/>
+
+</g>
+
+
+<!-- Axes -->
+<g stroke="#333" stroke-width="2">
+
+    <line x1="90" y1="410" x2="710" y2="410"/>
+
+    <line x1="90" y1="90" x2="90" y2="410"/>
+
+</g>
+
+
+<!-- Axis Labels -->
+
+<g
+    fill="#454b55"
+    font-size="16"
+    font-family="Noto Sans Thai, Segoe UI, Arial"
+>
+
+    <text x="400" y="465" text-anchor="middle">
+        ประสบการณ์ทำงาน (ปี)
+    </text>
+
+    <text
+        x="22"
+        y="250"
+        text-anchor="middle"
+        transform="rotate(-90 22 250)"
+    >
+        เงินเดือน (หมื่นบาท)
+    </text>
+
+
+    <!-- X Axis -->
+
+    <text x="90" y="435" text-anchor="middle">1</text>
+
+    <text x="245" y="435" text-anchor="middle">2</text>
+
+    <text x="400" y="435" text-anchor="middle">3</text>
+
+    <text x="555" y="435" text-anchor="middle">4</text>
+
+    <text x="710" y="435" text-anchor="middle">5</text>
+
+
+    <!-- Y Axis -->
+
+    <text x="75" y="415" text-anchor="end">10</text>
+
+    <text x="75" y="335" text-anchor="end">15</text>
+
+    <text x="75" y="255" text-anchor="end">20</text>
+
+    <text x="75" y="175" text-anchor="end">25</text>
+
+    <text x="75" y="95" text-anchor="end">30</text>
+
+</g>
+
+
+<!-- เส้นเชื่อมเพื่อนบ้าน -->
+
+<g
+    stroke="#1677ff"
+    stroke-width="3"
+    stroke-dasharray="8 7"
+    opacity=".65"
+>
+
+    <!-- รายที่ 2 → พนักงานใหม่ -->
+
+    <line
+        x1="245"
+        y1="330"
+        x2="400"
+        y2="282"
+    />
+
+    <!-- รายที่ 3 → พนักงานใหม่ -->
+
+    <line
+        x1="555"
+        y1="234"
+        x2="400"
+        y2="282"
+    />
+
+</g>
+
+
+<!-- ข้อมูลพนักงาน -->
+
+<g
+    fill="#777"
+    stroke="white"
+    stroke-width="4"
+>
+
+    <!-- รายที่ 1 -->
+
+    <circle
+        cx="90"
+        cy="378"
+        r="10"
+    />
+
+    <!-- รายที่ 2 -->
+
+    <circle
+        cx="245"
+        cy="330"
+        r="10"
+    />
+
+    <!-- รายที่ 3 -->
+
+    <circle
+        cx="555"
+        cy="234"
+        r="10"
+    />
+
+    <!-- รายที่ 4 -->
+
+    <circle
+        cx="710"
+        cy="186"
+        r="10"
+    />
+
+</g>
+
+
+<!-- เพื่อนบ้าน K = 2 -->
+
+<g
+    fill="#1677ff"
+    stroke="white"
+    stroke-width="4"
+>
+
+    <!-- รายที่ 2 -->
+
+    <circle
+        cx="245"
+        cy="330"
+        r="14"
+    />
+
+    <!-- รายที่ 3 -->
+
+    <circle
+        cx="555"
+        cy="234"
+        r="14"
+    />
+
+</g>
+
+
+<!-- จุดพนักงานใหม่ -->
+
+<g
+    fill="#ff8a00"
+    stroke="white"
+    stroke-width="5"
+>
+
+    <circle
+        cx="400"
+        cy="282"
+        r="16"
+    />
+
+</g>
+
+
+<!-- Text บนกราฟ -->
+
+<g
+    font-size="15"
+    font-family="Noto Sans Thai, Segoe UI, Arial"
+>
+
+    <text
+        x="105"
+        y="370"
+        fill="#555"
+    >
+        รายที่ 1: 12
+    </text>
+
+
+    <text
+        x="260"
+        y="320"
+        fill="#1677ff"
+        font-weight="700"
+    >
+        รายที่ 2: 15
+    </text>
+
+
+    <text
+        x="570"
+        y="224"
+        fill="#1677ff"
+        font-weight="700"
+    >
+        รายที่ 3: 21
+    </text>
+
+
+    <text
+        x="590"
+        y="178"
+        fill="#555"
+    >
+        รายที่ 4: 24
+    </text>
+
+
+    <text
+        x="400"
+        y="260"
+        text-anchor="middle"
+        fill="#ff8a00"
+        font-weight="800"
+    >
+        พนักงานใหม่
+    </text>
+
+
+    <text
+        x="400"
+        y="305"
+        text-anchor="middle"
+        fill="#ff8a00"
+        font-weight="700"
+    >
+        ทำนาย = 18
+    </text>
+
+</g>
+
+</svg>
+
+</div>
+
+
+<!-- ================= INFORMATION ================= -->
+
+<div class="info">
+
+<h2>ผลการคำนวณ</h2>
+
+<p>
+    <b>ข้อมูลใหม่:</b>
+    ประสบการณ์ 3 ปี
+</p>
+
+<p>
+    <b>K = 2</b>
+    เลือกเพื่อนบ้านที่ใกล้ที่สุด 2 ราย
+</p>
+
+
+<div class="formula">
+
+    (15 + 21) ÷ 2 = <b>18</b>
+
+</div>
+
+
+<div class="result">
+
+    <div>
+        เงินเดือนที่ทำนาย
     </div>
 
-    <script>
-        Chart.defaults.font.family = "'Prompt', sans-serif";
-        Chart.defaults.color = "#64748b";
+    <div class="number">
+        18 หมื่นบาท
+    </div>
 
-        // ---------------------------------------------------------
-        // กราฟที่ 1: Bar Chart แสดงระยะห่าง (Distance)
-        // ---------------------------------------------------------
-        const ctxDist = document.getElementById('distanceChart').getContext('2d');
-        new Chart(ctxDist, {
-            type: 'bar',
-            data: {
-                labels: ['รายที่ 1 (X=1)', 'รายที่ 2 (X=2)', 'รายที่ 3 (X=4)', 'รายที่ 4 (X=5)'],
-                datasets: [{
-                    label: 'ระยะห่างจากพนักงานใหม่ (X=3)',
-                    data: [2, 1, 1, 2],
-                    // เน้นสีเพื่อนบ้านที่ถูกเลือก (รายที่ 2 และ 3) เป็นสีม่วง
-                    backgroundColor: ['#e2e8f0', '#6366f1', '#6366f1', '#e2e8f0'],
-                    borderRadius: 8,
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: function(ctx) { return ` ระยะห่าง (Distance) = ${ctx.raw}`; }
-                        }
-                    }
-                },
-                scales: {
-                    y: { 
-                        beginAtZero: true, 
-                        max: 3,
-                        ticks: { stepSize: 1 },
-                        title: { display: true, text: 'ค่าระยะห่าง (Absolute Distance)' }
-                    },
-                    x: {
-                        title: { display: true, text: 'ข้อมูลพนักงานเดิม' }
-                    }
-                }
-            }
-        });
+    <div>
+        (180,000 บาท/เดือน)
+    </div>
 
-        // ---------------------------------------------------------
-        // กราฟที่ 2: Scatter Plot แสดงเพื่อนบ้านและการทำนาย
-        // ---------------------------------------------------------
-        const ctxKnn = document.getElementById('knnChart').getContext('2d');
-        new Chart(ctxKnn, {
-            type: 'scatter',
-            data: {
-                datasets: [
-                    {
-                        label: 'ไม่ถูกเลือก',
-                        data: [{x: 1, y: 15}, {x: 5, y: 22}],
-                        backgroundColor: '#cbd5e1', borderColor: '#94a3b8',
-                        pointRadius: 6, pointHoverRadius: 8
-                    },
-                    {
-                        label: 'เพื่อนบ้าน (K=2)',
-                        data: [{x: 2, y: 17}, {x: 4, y: 19}],
-                        backgroundColor: '#6366f1', borderColor: '#4f46e5',
-                        pointRadius: 10, borderWidth: 3
-                    },
-                    {
-                        label: 'ผลทำนาย (Target)',
-                        data: [{x: 3, y: 18}],
-                        backgroundColor: '#ec4899', borderColor: '#db2777',
-                        pointStyle: 'rectRot', pointRadius: 12, borderWidth: 3
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8, font: {size: 12} } },
-                    tooltip: {
-                        callbacks: {
-                            label: function(ctx) { return ` ประสบการณ์: ${ctx.parsed.x} ปี | เงินเดือน: ${ctx.parsed.y} หมื่นบาท`; }
-                        }
-                    },
-                    annotation: {
-                        annotations: {
-                            line1: { type: 'line', xMin: 3, yMin: 18, xMax: 2, yMax: 17, borderColor: '#94a3b8', borderWidth: 2, borderDash: [4, 4] },
-                            line2: { type: 'line', xMin: 3, yMin: 18, xMax: 4, yMax: 19, borderColor: '#94a3b8', borderWidth: 2, borderDash: [4, 4] },
-                            resultLine: { type: 'line', xMin: 0, yMin: 18, xMax: 3, yMax: 18, borderColor: '#10b981', borderWidth: 2, borderDash: [4, 4] },
-                            resultLineY: { type: 'line', xMin: 3, yMin: 10, xMax: 3, yMax: 18, borderColor: '#10b981', borderWidth: 2, borderDash: [4, 4] }
-                        }
-                    }
-                },
-                scales: {
-                    x: { title: { display: true, text: 'ประสบการณ์ (ปี)' }, min: 0, max: 6, ticks: { stepSize: 1 } },
-                    y: { title: { display: true, text: 'เงินเดือน (หมื่นบาท)' }, min: 10, max: 25, ticks: { stepSize: 2 } }
-                }
-            }
-        });
-    </script>
+</div>
+
+
+<!-- Legend -->
+
+<div class="legend">
+
+    <div>
+        <span class="dot normal"></span>
+        ข้อมูลพนักงาน
+    </div>
+
+    <div>
+        <span class="dot neighbor"></span>
+        เพื่อนบ้าน K = 2
+    </div>
+
+    <div>
+        <span class="dot new"></span>
+        พนักงานใหม่ / ค่าที่ทำนาย
+    </div>
+
+</div>
+
+
+<p class="note">
+
+    เส้นประแสดงการเชื่อมจากพนักงานใหม่
+    ไปยังเพื่อนบ้านที่มีระยะห่างใกล้ที่สุด
+    คือรายที่ 2 และรายที่ 3
+
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
 </body>
 </html>
