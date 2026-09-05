@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>KNN Regression Visualization</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: "Noto Sans Thai", "Segoe UI", Arial, sans-serif;
+    background: #f5f7fb;
+    color: #20242b;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 35px auto;
+    padding: 25px;
+}
+
+.card {
+    background: white;
+    border-radius: 22px;
+    padding: 30px;
+    box-shadow: 0 8px 30px rgba(0,0,0,.08);
+}
+
+h1 {
+    margin: 0 0 8px;
+    font-size: 30px;
+}
+
+.subtitle {
+    color: #687080;
+    margin-bottom: 25px;
+}
+
+.layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 25px;
+    align-items: start;
+}
+
+.chart-wrap {
+    position: relative;
+    border: 1px solid #e5e8ee;
+    border-radius: 16px;
+    padding: 10px;
+    background: #fff;
+}
+
+svg {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.info {
+    background: #f7f8fb;
+    border-radius: 16px;
+    padding: 20px;
+}
+
+.info h2 {
+    margin-top: 0;
+    font-size: 20px;
+}
+
+.result {
+    margin-top: 18px;
+    padding: 18px;
+    border-radius: 14px;
+    background: #eaf4ff;
+    text-align: center;
+}
+
+.result .number {
+    font-size: 32px;
+    font-weight: 800;
+}
+
+.formula {
+    background: white;
+    border: 1px solid #e2e5eb;
+    padding: 12px;
+    border-radius: 10px;
+    margin: 12px 0;
+    text-align: center;
+    font-size: 18px;
+}
+
+.legend {
+    margin-top: 20px;
+}
+
+.legend div {
+    margin: 10px 0;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    display: inline-block;
+    border: 2px solid white;
+    box-shadow: 0 0 0 1px #999;
+}
+
+.normal {
+    background: #777;
+}
+
+.neighbor {
+    background: #1677ff;
+}
+
+.new {
+    background: #ff8a00;
+}
+
+.note {
+    color: #69707d;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+@media (max-width: 800px) {
+    .layout {
+        grid-template-columns: 1fr;
+    }
+
+    .container {
+        margin: 10px auto;
+        padding: 12px;
+    }
+
+    .card {
+        padding: 18px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="card">
+
+<h1>KNN Regression Visualization</h1>
+
+<div class="subtitle">
+    ทำนายเงินเดือนจากประสบการณ์ทำงาน โดยกำหนด K = 2
+</div>
+
+<div class="layout">
+
+<!-- ================= GRAPH ================= -->
+
+<div class="chart-wrap">
+
+<svg viewBox="0 0 760 500">
+
+<!-- Background -->
+<rect x="0" y="0" width="760" height="500" fill="white"/>
+
+
+<!-- Grid -->
+<g stroke="#e8ebf0" stroke-width="1">
+
+    <line x1="90" y1="410" x2="710" y2="410"/>
+    <line x1="90" y1="330" x2="710" y2="330"/>
+    <line x1="90" y1="250" x2="710" y2="250"/>
+    <line x1="90" y1="170" x2="710" y2="170"/>
+    <line x1="90" y1="90" x2="710" y2="90"/>
+
+    <line x1="90" y1="90" x2="90" y2="410"/>
+    <line x1="245" y1="90" x2="245" y2="410"/>
+    <line x1="400" y1="90" x2="400" y2="410"/>
+    <line x1="555" y1="90" x2="555" y2="410"/>
+    <line x1="710" y1="90" x2="710" y2="410"/>
+
+</g>
+
+
+<!-- Axes -->
+<g stroke="#333" stroke-width="2">
+
+    <line x1="90" y1="410" x2="710" y2="410"/>
+
+    <line x1="90" y1="90" x2="90" y2="410"/>
+
+</g>
+
+
+<!-- Axis Labels -->
+
+<g
+    fill="#454b55"
+    font-size="16"
+    font-family="Noto Sans Thai, Segoe UI, Arial"
+>
+
+    <text x="400" y="465" text-anchor="middle">
+        ประสบการณ์ทำงาน (ปี)
+    </text>
+
+    <text
+        x="22"
+        y="250"
+        text-anchor="middle"
+        transform="rotate(-90 22 250)"
+    >
+        เงินเดือน (หมื่นบาท)
+    </text>
+
+
+    <!-- X Axis -->
+
+    <text x="90" y="435" text-anchor="middle">1</text>
+
+    <text x="245" y="435" text-anchor="middle">2</text>
+
+    <text x="400" y="435" text-anchor="middle">3</text>
+
+    <text x="555" y="435" text-anchor="middle">4</text>
+
+    <text x="710" y="435" text-anchor="middle">5</text>
+
+
+    <!-- Y Axis -->
+
+    <text x="75" y="415" text-anchor="end">10</text>
+
+    <text x="75" y="335" text-anchor="end">15</text>
+
+    <text x="75" y="255" text-anchor="end">20</text>
+
+    <text x="75" y="175" text-anchor="end">25</text>
+
+    <text x="75" y="95" text-anchor="end">30</text>
+
+</g>
+
+
+<!-- เส้นเชื่อมเพื่อนบ้าน -->
+
+<g
+    stroke="#1677ff"
+    stroke-width="3"
+    stroke-dasharray="8 7"
+    opacity=".65"
+>
+
+    <!-- รายที่ 2 → พนักงานใหม่ -->
+
+    <line
+        x1="245"
+        y1="330"
+        x2="400"
+        y2="282"
+    />
+
+    <!-- รายที่ 3 → พนักงานใหม่ -->
+
+    <line
+        x1="555"
+        y1="234"
+        x2="400"
+        y2="282"
+    />
+
+</g>
+
+
+<!-- ข้อมูลพนักงาน -->
+
+<g
+    fill="#777"
+    stroke="white"
+    stroke-width="4"
+>
+
+    <!-- รายที่ 1 -->
+
+    <circle
+        cx="90"
+        cy="378"
+        r="10"
+    />
+
+    <!-- รายที่ 2 -->
+
+    <circle
+        cx="245"
+        cy="330"
+        r="10"
+    />
+
+    <!-- รายที่ 3 -->
+
+    <circle
+        cx="555"
+        cy="234"
+        r="10"
+    />
+
+    <!-- รายที่ 4 -->
+
+    <circle
+        cx="710"
+        cy="186"
+        r="10"
+    />
+
+</g>
+
+
+<!-- เพื่อนบ้าน K = 2 -->
+
+<g
+    fill="#1677ff"
+    stroke="white"
+    stroke-width="4"
+>
+
+    <!-- รายที่ 2 -->
+
+    <circle
+        cx="245"
+        cy="330"
+        r="14"
+    />
+
+    <!-- รายที่ 3 -->
+
+    <circle
+        cx="555"
+        cy="234"
+        r="14"
+    />
+
+</g>
+
+
+<!-- จุดพนักงานใหม่ -->
+
+<g
+    fill="#ff8a00"
+    stroke="white"
+    stroke-width="5"
+>
+
+    <circle
+        cx="400"
+        cy="282"
+        r="16"
+    />
+
+</g>
+
+
+<!-- Text บนกราฟ -->
+
+<g
+    font-size="15"
+    font-family="Noto Sans Thai, Segoe UI, Arial"
+>
+
+    <text
+        x="105"
+        y="370"
+        fill="#555"
+    >
+        รายที่ 1: 12
+    </text>
+
+
+    <text
+        x="260"
+        y="320"
+        fill="#1677ff"
+        font-weight="700"
+    >
+        รายที่ 2: 15
+    </text>
+
+
+    <text
+        x="570"
+        y="224"
+        fill="#1677ff"
+        font-weight="700"
+    >
+        รายที่ 3: 21
+    </text>
+
+
+    <text
+        x="590"
+        y="178"
+        fill="#555"
+    >
+        รายที่ 4: 24
+    </text>
+
+
+    <text
+        x="400"
+        y="260"
+        text-anchor="middle"
+        fill="#ff8a00"
+        font-weight="800"
+    >
+        พนักงานใหม่
+    </text>
+
+
+    <text
+        x="400"
+        y="305"
+        text-anchor="middle"
+        fill="#ff8a00"
+        font-weight="700"
+    >
+        ทำนาย = 18
+    </text>
+
+</g>
+
+</svg>
+
+</div>
+
+
+<!-- ================= INFORMATION ================= -->
+
+<div class="info">
+
+<h2>ผลการคำนวณ</h2>
+
+<p>
+    <b>ข้อมูลใหม่:</b>
+    ประสบการณ์ 3 ปี
+</p>
+
+<p>
+    <b>K = 2</b>
+    เลือกเพื่อนบ้านที่ใกล้ที่สุด 2 ราย
+</p>
+
+
+<div class="formula">
+
+    (15 + 21) ÷ 2 = <b>18</b>
+
+</div>
+
+
+<div class="result">
+
+    <div>
+        เงินเดือนที่ทำนาย
+    </div>
+
+    <div class="number">
+        18 หมื่นบาท
+    </div>
+
+    <div>
+        (180,000 บาท/เดือน)
+    </div>
+
+</div>
+
+
+<!-- Legend -->
+
+<div class="legend">
+
+    <div>
+        <span class="dot normal"></span>
+        ข้อมูลพนักงาน
+    </div>
+
+    <div>
+        <span class="dot neighbor"></span>
+        เพื่อนบ้าน K = 2
+    </div>
+
+    <div>
+        <span class="dot new"></span>
+        พนักงานใหม่ / ค่าที่ทำนาย
+    </div>
+
+</div>
+
+
+<p class="note">
+
+    เส้นประแสดงการเชื่อมจากพนักงานใหม่
+    ไปยังเพื่อนบ้านที่มีระยะห่างใกล้ที่สุด
+    คือรายที่ 2 และรายที่ 3
+
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</body>
+</html>
