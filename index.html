@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KNN Regression - Machine Learning</title>
+    <title>Animated KNN Regression</title>
     
     <!-- ฟอนต์และไอคอน -->
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -15,208 +15,243 @@
 
     <style>
         :root {
-            --primary: #4338ca; /* Indigo */
-            --secondary: #3b82f6; /* Blue */
-            --accent: #f43f5e; /* Rose */
-            --bg-color: #f0fdfa; /* Teal light */
-            --glass-bg: rgba(255, 255, 255, 0.95);
-            --text-dark: #1e293b;
-            --text-light: #64748b;
+            --glass-bg: rgba(255, 255, 255, 0.9);
+            --glass-border: rgba(255, 255, 255, 0.4);
+            --text-main: #1e293b;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --accent-pink: #ec4899;
         }
 
         body {
             font-family: 'Prompt', sans-serif;
-            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%); /* พื้นหลังเรียบหรู */
-            color: var(--text-dark);
+            color: var(--text-main);
             margin: 0;
             padding: 40px 20px;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
+            /* 1. พื้นหลังไล่สีแบบเคลื่อนไหว */
+            background: linear-gradient(-45deg, #e0c3fc, #8ec5fc, #e0c3fc, #c2e9fb);
+            background-size: 400% 400%;
+            animation: gradientBG 12s ease infinite;
         }
 
-        .dashboard {
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
             width: 100%;
-            max-width: 1000px;
+            max-width: 1100px;
+        }
+
+        /* 2. สไตล์ Glassmorphism */
+        .glass-panel {
             background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
             border-radius: 24px;
+            padding: 35px;
             box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-
-        /* --- ส่วนหัว --- */
-        .header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            color: white;
-            padding: 40px;
-            text-align: center;
-            position: relative;
-        }
-        .header h1 { margin: 0; font-size: 36px; font-weight: 700; }
-        .header p { margin: 10px 0 0; font-size: 18px; opacity: 0.9; }
-
-        /* --- เลย์เอาต์หลัก --- */
-        .content { padding: 40px; }
-        
-        /* ข้อมูลโจทย์ */
-        .problem-statement {
-            background: white;
-            border-left: 5px solid var(--secondary);
-            padding: 20px 25px;
-            border-radius: 8px;
             margin-bottom: 30px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Hover Effect ลอยขึ้น */
+        .glass-panel:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 45px rgba(139, 92, 246, 0.2);
+            border-color: rgba(139, 92, 246, 0.3);
+        }
+
+        /* 3. Animation การปรากฏตัว */
+        .animate-up {
+            opacity: 0;
+            transform: translateY(40px);
+            animation: fadeInUp 0.8s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
         }
         
-        .grid-data {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 30px;
-            align-items: center;
+        .delay-1 { animation-delay: 0.2s; }
+        .delay-2 { animation-delay: 0.4s; }
+        .delay-3 { animation-delay: 0.6s; }
+        .delay-4 { animation-delay: 0.8s; }
+
+        @keyframes fadeInUp {
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        /* ตารางข้อมูล */
-        .styled-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 15px;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        .styled-table thead tr {
-            background-color: var(--primary);
-            color: #ffffff;
-            text-align: left;
-        }
-        .styled-table th, .styled-table td { padding: 12px 15px; text-align: center; border-bottom: 1px solid #e2e8f0; }
-        .styled-table tbody tr { background-color: white; }
-        .styled-table tbody tr.target-row { background-color: #fff1f2; font-weight: bold; color: var(--accent); }
-
-        /* --- Visualization Section --- */
-        .viz-section {
-            margin-top: 40px;
-            padding-top: 30px;
-            border-top: 2px dashed #cbd5e1;
-        }
-        .viz-title {
+        /* --- Header --- */
+        .header-title {
             text-align: center;
-            color: var(--primary);
-            font-size: 24px;
-            margin-bottom: 20px;
+            font-size: 38px;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--accent-blue), var(--accent-purple), var(--accent-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0 0 10px 0;
         }
         
+        .header-desc {
+            text-align: center;
+            color: #64748b;
+            font-size: 18px;
+            margin: 0;
+        }
+
+        /* --- Grid Layout --- */
+        .layout-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 30px;
+        }
+
+        /* --- Table --- */
+        .data-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+        }
+        .data-table th { color: #64748b; font-weight: 600; padding: 10px; border-bottom: 2px solid #e2e8f0; }
+        .data-table td { background: white; padding: 15px; text-align: center; border-radius: 12px; transition: 0.3s; }
+        .data-table tr:hover td { transform: scale(1.02); box-shadow: 0 5px 15px rgba(0,0,0,0.05); cursor: pointer; }
+        
+        .target-row td {
+            background: linear-gradient(135deg, #fdf4ff, #fae8ff);
+            color: var(--accent-pink);
+            font-weight: 600;
+            border: 1px solid #fbcfe8;
+        }
+
+        /* --- Process Cards --- */
+        .process-box {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 15px;
+            border-left: 6px solid var(--accent-purple);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: 0.3s;
+        }
+        
+        .process-box:hover {
+            transform: translateX(10px);
+            box-shadow: -5px 10px 20px rgba(139, 92, 246, 0.15);
+        }
+
+        .icon-wrapper {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+        }
+
+        /* --- Result Pulse --- */
+        .result-highlight {
+            background: linear-gradient(135deg, #ec4899, #f43f5e);
+            color: white;
+            padding: 25px;
+            border-radius: 16px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            box-shadow: 0 10px 25px rgba(236, 72, 153, 0.3);
+            /* 4. เอฟเฟกต์กระพริบดึงดูดสายตา */
+            animation: pulseGlow 2s infinite;
+        }
+
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.7); transform: scale(1); }
+            50% { box-shadow: 0 0 0 15px rgba(236, 72, 153, 0); transform: scale(1.02); }
+            100% { box-shadow: 0 0 0 0 rgba(236, 72, 153, 0); transform: scale(1); }
+        }
+
         .chart-container {
+            position: relative;
             height: 450px;
             width: 100%;
             background: white;
             border-radius: 16px;
             padding: 20px;
             box-sizing: border-box;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-            margin-bottom: 20px;
         }
-
-        /* --- สรุปกระบวนการ --- */
-        .process-cards {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            margin-top: 20px;
-        }
-        
-        .card {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
-            text-align: center;
-        }
-        .card-icon {
-            font-size: 24px;
-            color: white;
-            width: 45px;
-            height: 45px;
-            line-height: 45px;
-            border-radius: 50%;
-            margin: 0 auto 15px;
-        }
-        .bg-blue { background: var(--secondary); }
-        .bg-purple { background: #8b5cf6; }
-        .bg-rose { background: var(--accent); }
-        
-        .card h4 { margin: 0 0 10px 0; color: var(--text-dark); font-size: 16px; }
-        .card p { margin: 0; color: var(--text-light); font-size: 14px; }
-        .card .highlight { font-size: 20px; font-weight: bold; color: var(--text-dark); display: block; margin-top: 5px; }
     </style>
 </head>
 <body>
 
-    <div class="dashboard">
+    <div class="container">
         
         <!-- Header -->
-        <div class="header">
-            <h1><i class="fas fa-chart-scatter"></i> KNN Regression</h1>
-            <p>การทำนายค่าตัวเลขต่อเนื่อง จากค่าเฉลี่ยของเพื่อนบ้านที่ใกล้ที่สุด (K-Nearest Neighbors)</p>
+        <div class="glass-panel animate-up">
+            <h1 class="header-title"><i class="fas fa-magic"></i> KNN Regression</h1>
+            <p class="header-desc">อัลกอริทึมทำนายตัวเลขต่อเนื่อง (Continuous Value) ด้วยค่าเฉลี่ยของเพื่อนบ้านใกล้ที่สุด</p>
         </div>
 
-        <div class="content">
-            <!-- 1. ข้อมูลโจทย์ -->
-            <div class="problem-statement">
-                <h3 style="margin: 0 0 15px 0; color: var(--primary);"><i class="fas fa-clipboard-list"></i> ตัวอย่างโจทย์จำลอง (K=2)</h3>
-                <div class="grid-data">
-                    <table class="styled-table">
-                        <thead>
-                            <tr><th>รายที่</th><th>ประสบการณ์ (X)</th><th>เงินเดือน (Y)</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr><td>1</td><td>1 ปี</td><td>15 หมื่น</td></tr>
-                            <tr><td>2</td><td>2 ปี</td><td>17 หมื่น</td></tr>
-                            <tr><td>3</td><td>4 ปี</td><td>19 หมื่น</td></tr>
-                            <tr><td>4</td><td>5 ปี</td><td>22 หมื่น</td></tr>
-                            <tr class="target-row"><td>พนักงานใหม่</td><td>3 ปี</td><td>?</td></tr>
-                        </tbody>
-                    </table>
-                    <div style="font-size: 15px; color: var(--text-light); line-height: 1.7;">
-                        <strong>เป้าหมาย:</strong> ประเมินเงินเดือนพนักงานใหม่ที่มี <span style="color: var(--accent); font-weight: 600;">ประสบการณ์ 3 ปี</span><br>
-                        <strong>เงื่อนไข:</strong> อัลกอริทึมจะค้นหาข้อมูลพนักงานเดิมที่มีประสบการณ์ใกล้เคียงกับ 3 ปีมากที่สุดจำนวน <strong>2 คน (K=2)</strong> จากนั้นนำเงินเดือนของ 2 คนนั้นมาหา <strong>ค่าเฉลี่ยทางสถิติ</strong> เพื่อเป็นผลลัพธ์
-                    </div>
+        <div class="layout-grid">
+            <!-- ซ้าย: ข้อมูลโจทย์ -->
+            <div class="glass-panel animate-up delay-1">
+                <h3 style="color: var(--accent-blue); margin-top: 0;"><i class="fas fa-database"></i> ข้อมูลโจทย์ (K=2)</h3>
+                <table class="data-table">
+                    <thead><tr><th>รายที่</th><th>ประสบการณ์ (X)</th><th>เงินเดือน (Y)</th></tr></thead>
+                    <tbody>
+                        <tr><td>1</td><td>1 ปี</td><td>15 หมื่น</td></tr>
+                        <tr><td>2</td><td>2 ปี</td><td>17 หมื่น</td></tr>
+                        <tr><td>3</td><td>4 ปี</td><td>19 หมื่น</td></tr>
+                        <tr><td>4</td><td>5 ปี</td><td>22 หมื่น</td></tr>
+                        <tr class="target-row"><td>Target</td><td>3 ปี</td><td>?</td></tr>
+                    </tbody>
+                </table>
+                <div style="margin-top: 20px; text-align: center;">
+                    <span style="background: rgba(139, 92, 246, 0.1); color: var(--accent-purple); padding: 8px 15px; border-radius: 20px; font-weight: 600; font-size: 14px;">
+                        <i class="fas fa-search"></i> เป้าหมาย: หาเงินเดือนของคนที่มีประสบการณ์ 3 ปี
+                    </span>
                 </div>
             </div>
 
-            <!-- 2. Visualization (1 กราฟที่รวมทุกกระบวนการ) -->
-            <div class="viz-section">
-                <h2 class="viz-title">Visualization อธิบายกระบวนการทำงานแบบ Step-by-Step</h2>
-                
-                <div class="chart-container">
-                    <canvas id="knnChart"></canvas>
+            <!-- ขวา: Process & Result -->
+            <div class="animate-up delay-2">
+                <div class="process-box">
+                    <div class="icon-wrapper"><i class="fas fa-ruler-combined"></i></div>
+                    <div>
+                        <h4 style="margin: 0 0 5px 0; color: var(--text-main);">Step 1 & 2: หาระยะห่าง และเลือก K=2</h4>
+                        <p style="margin: 0; color: #64748b; font-size: 14px;">พบเพื่อนบ้านที่ใกล้ X=3 ที่สุดคือ <strong>รายที่ 2</strong> และ <strong>รายที่ 3</strong> (ระยะห่าง = 1 เท่ากัน)</p>
+                    </div>
                 </div>
 
-                <!-- 3. สรุปกระบวนการใต้กราฟ -->
-                <div class="process-cards">
-                    <div class="card">
-                        <div class="card-icon bg-blue"><i class="fas fa-ruler-horizontal"></i></div>
-                        <h4>Step 1: หาระยะห่าง</h4>
-                        <p>พนักงานใหม่มีประสบการณ์ 3 ปี<br>ค้นหาความต่าง (Distance)</p>
-                        <span class="highlight">|3 - X|</span>
+                <div class="process-box" style="border-color: var(--accent-pink);">
+                    <div class="icon-wrapper" style="background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));"><i class="fas fa-calculator"></i></div>
+                    <div>
+                        <h4 style="margin: 0 0 5px 0; color: var(--text-main);">Step 3: หาค่าเฉลี่ย (Mean)</h4>
+                        <p style="margin: 0; color: #64748b; font-size: 14px;">นำค่า Y ของเพื่อนบ้านมาเฉลี่ย: (17 + 19) / 2 = 18</p>
                     </div>
-                    <div class="card">
-                        <div class="card-icon bg-purple"><i class="fas fa-users"></i></div>
-                        <h4>Step 2: เลือก K=2</h4>
-                        <p>เลือกรายที่ 2 และรายที่ 3<br>เพราะมีระยะห่างน้อยที่สุด</p>
-                        <span class="highlight">Distance = 1</span>
-                    </div>
-                    <div class="card" style="border: 2px solid var(--accent);">
-                        <div class="card-icon bg-rose"><i class="fas fa-calculator"></i></div>
-                        <h4>Step 3: หาค่าเฉลี่ย (ผลลัพธ์)</h4>
-                        <p>นำเงินเดือนมาหาค่าเฉลี่ย<br>(17 + 19) / 2</p>
-                        <span class="highlight" style="color: var(--accent);">18 หมื่นบาท</span>
-                    </div>
+                </div>
+
+                <div class="result-highlight animate-up delay-3">
+                    <i class="fas fa-check-circle"></i> ผลลัพธ์: 18 หมื่นบาท
                 </div>
             </div>
-
         </div>
+
+        <!-- กราฟ 1 กราฟ ที่รวมทุกอย่าง (Animated) -->
+        <div class="glass-panel animate-up delay-4">
+            <h3 style="color: var(--accent-purple); margin-top: 0; text-align: center;">
+                <i class="fas fa-chart-line"></i> Interactive Visualization
+            </h3>
+            <div class="chart-container">
+                <canvas id="knnChart"></canvas>
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -228,71 +263,58 @@
             data: {
                 datasets: [
                     {
-                        label: ' ข้อมูลเดิม (ไม่ถูกเลือก)',
+                        label: ' พนักงานเดิม',
                         data: [{x: 1, y: 15}, {x: 5, y: 22}],
                         backgroundColor: '#cbd5e1', borderColor: '#94a3b8',
-                        pointRadius: 8, pointHoverRadius: 10
+                        pointRadius: 8, pointHoverRadius: 12
                     },
                     {
-                        label: ' เพื่อนบ้านใกล้สุด (K=2)',
+                        label: ' เพื่อนบ้าน (K=2)',
                         data: [{x: 2, y: 17}, {x: 4, y: 19}],
                         backgroundColor: '#8b5cf6', borderColor: '#7c3aed',
-                        pointRadius: 12, borderWidth: 3
+                        pointRadius: 14, borderWidth: 3, pointHoverRadius: 18
                     },
                     {
-                        label: ' เป้าหมาย (พนักงานใหม่ X=3)',
+                        label: ' ผลทำนาย (X=3)',
                         data: [{x: 3, y: 18}],
-                        backgroundColor: '#f43f5e', borderColor: '#e11d48',
-                        pointStyle: 'rectRot', pointRadius: 14, borderWidth: 3
+                        backgroundColor: '#ec4899', borderColor: '#be185d',
+                        pointStyle: 'rectRot', pointRadius: 16, borderWidth: 3, pointHoverRadius: 20
                     }
                 ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'top', labels: { usePointStyle: true, padding: 20, font: {size: 14, weight: '500'} } },
-                    tooltip: {
-                        backgroundColor: 'rgba(30, 41, 59, 0.9)', padding: 12, titleFont: {size: 14}, bodyFont: {size: 14},
-                        callbacks: {
-                            label: function(ctx) { return ` ประสบการณ์ ${ctx.parsed.x} ปี : เงินเดือน ${ctx.parsed.y} หมื่นบาท`; }
+                /* 5. Animation ของ Chart.js ค่อยๆ เด้งขึ้นมา */
+                animation: {
+                    duration: 2500,
+                    easing: 'easeOutElastic',
+                    delay: (context) => {
+                        let delay = 0;
+                        if (context.type === 'data' && context.mode === 'default') {
+                            delay = context.dataIndex * 300 + context.datasetIndex * 500;
                         }
+                        return delay;
+                    }
+                },
+                plugins: {
+                    legend: { position: 'top', labels: { usePointStyle: true, font: {size: 14} } },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)', padding: 15, titleFont: {size: 15}, bodyFont: {size: 15},
+                        callbacks: { label: (ctx) => ` ประสบการณ์ ${ctx.parsed.x} ปี : เงินเดือน ${ctx.parsed.y} หมื่นบาท` }
                     },
                     annotation: {
                         annotations: {
-                            // เส้นอธิบายระยะห่าง (Step 1 & 2)
-                            dist1: {
-                                type: 'line', xMin: 3, yMin: 18, xMax: 2, yMax: 17,
-                                borderColor: '#8b5cf6', borderWidth: 2, borderDash: [5, 5],
-                                label: { display: true, content: ' ระยะห่าง = 1 ', backgroundColor: '#f3f4f6', color: '#64748b', font: {size: 12} }
-                            },
-                            dist2: {
-                                type: 'line', xMin: 3, yMin: 18, xMax: 4, yMax: 19,
-                                borderColor: '#8b5cf6', borderWidth: 2, borderDash: [5, 5],
-                                label: { display: true, content: ' ระยะห่าง = 1 ', backgroundColor: '#f3f4f6', color: '#64748b', font: {size: 12} }
-                            },
-                            // เส้นอธิบายการหาค่าเฉลี่ย (Step 3)
-                            meanLineX: {
-                                type: 'line', xMin: 3, yMin: 10, xMax: 3, yMax: 18,
-                                borderColor: '#f43f5e', borderWidth: 2, borderDash: [4, 4]
-                            },
-                            meanLineY: {
-                                type: 'line', xMin: 0, yMin: 18, xMax: 3, yMax: 18,
-                                borderColor: '#f43f5e', borderWidth: 2, borderDash: [4, 4],
-                                label: { display: true, content: ' ค่าเฉลี่ย = 18 ', position: 'start', backgroundColor: '#f43f5e', color: 'white', font: {weight: 'bold'} }
-                            }
+                            dist1: { type: 'line', xMin: 3, yMin: 18, xMax: 2, yMax: 17, borderColor: '#8b5cf6', borderWidth: 2, borderDash: [5, 5], label: { display: true, content: 'Distance = 1', backgroundColor: 'rgba(255,255,255,0.9)', color: '#8b5cf6' } },
+                            dist2: { type: 'line', xMin: 3, yMin: 18, xMax: 4, yMax: 19, borderColor: '#8b5cf6', borderWidth: 2, borderDash: [5, 5], label: { display: true, content: 'Distance = 1', backgroundColor: 'rgba(255,255,255,0.9)', color: '#8b5cf6' } },
+                            meanLine: { type: 'line', xMin: 0, yMin: 18, xMax: 3, yMax: 18, borderColor: '#ec4899', borderWidth: 2, borderDash: [4, 4], label: { display: true, content: 'ค่าเฉลี่ย 18', position: 'start', backgroundColor: '#ec4899', color: 'white' } },
+                            targetLine: { type: 'line', xMin: 3, yMin: 10, xMax: 3, yMax: 18, borderColor: '#ec4899', borderWidth: 2, borderDash: [4, 4] }
                         }
                     }
                 },
                 scales: {
-                    x: {
-                        title: { display: true, text: 'ประสบการณ์ทำงาน (ปี) [แกน X]', font: { size: 15, weight: '600' } },
-                        min: 0, max: 6, ticks: { stepSize: 1 }, grid: { color: '#f1f5f9' }
-                    },
-                    y: {
-                        title: { display: true, text: 'อัตราเงินเดือน (หมื่นบาท) [แกน Y]', font: { size: 15, weight: '600' } },
-                        min: 10, max: 25, ticks: { stepSize: 2 }, grid: { color: '#f1f5f9' }
-                    }
+                    x: { title: { display: true, text: 'ประสบการณ์ (ปี)', font: { size: 16, weight: '600' } }, min: 0, max: 6, ticks: { stepSize: 1 }, grid: { color: '#f1f5f9' } },
+                    y: { title: { display: true, text: 'เงินเดือน (หมื่นบาท)', font: { size: 16, weight: '600' } }, min: 10, max: 25, ticks: { stepSize: 2 }, grid: { color: '#f1f5f9' } }
                 }
             }
         });
